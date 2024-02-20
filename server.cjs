@@ -12,7 +12,7 @@ process.on("uncaughtException", (err) => {
 });
 
 // Config
-env.config({ path: "BACKEND/config/config.env" });
+env.config({ path: "config/config.env" });
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
