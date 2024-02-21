@@ -1,8 +1,8 @@
-const express = require("express");
+import express from "express";
 const app = express();
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
-const env = require("dotenv");
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import env from "dotenv";
 
 env.config({ path: "BACKEND/config/config.env" });
 
@@ -19,10 +19,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Route imports
-const userRoute = require("./routes/userRoutes.cjs");
-const imageRoute = require("./routes/imageUploadRoutes.cjs");
-const errorMiddleware = require("./middleware/error.cjs");
-const payment = require("./routes/paymentRoute.cjs");
+import userRoute from "./routes/userRoutes.js";
+import imageRoute from "./routes/imageUploadRoutes.js";
+import errorMiddleware from "./middleware/error.js";
+import payment from "./routes/paymentRoute.js";
 
 app.use("/api/v1", userRoute);
 app.use("/api/v1", imageRoute);
@@ -31,4 +31,4 @@ app.use("/api/v1", payment);
 // Middleware for errors
 app.use(errorMiddleware);
 
-module.exports = app;
+export { app };

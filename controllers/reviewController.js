@@ -1,11 +1,11 @@
 // controllers/reviewController.js
-const Review = require("../models/reviewModel.cjs");
-const User = require("../models/userModel.cjs");
-const catchAsyncErrors = require("../middleware/catchAsyncErrors.cjs");
-const ErrorHandler = require("../utils/errorHandler.cjs");
+import Review from "../models/reviewModel.js";
+import User from "../models/userModel.js";
+import catchAsyncErrors from "../middleware/catchAsyncErrors.js";
+import ErrorHandler from "../utils/errorHandler.js";
 
 // POST /api/v1/astrologers/:astrologerId/reviews
-exports.postReview = catchAsyncErrors(async (req, res, next) => {
+export const postReview = catchAsyncErrors(async (req, res, next) => {
   console.log(req.user.name);
   const { ratings, review } = req.body;
   const astrologerId = req.params.astrologerId;
@@ -37,7 +37,7 @@ exports.postReview = catchAsyncErrors(async (req, res, next) => {
 });
 
 // GET /api/v1/astrologers/:astrologerId/reviews
-exports.getReviews = catchAsyncErrors(async (req, res, next) => {
+export const getReviews = catchAsyncErrors(async (req, res, next) => {
   const astrologerId = req.params.astrologerId;
 
   const reviews = await Review.find({ astrologer: astrologerId });

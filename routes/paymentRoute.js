@@ -1,13 +1,14 @@
-const express = require("express");
-const {
+import express from "express";
+import {
   processPayment,
   sendStripeApiKey,
-} = require("../controllers/paymentController.cjs");
+} from "../controllers/paymentController.js";
+
+import { isAuthenticatedUser } from "../middleware/auth.js";
 const router = express.Router();
-const { isAuthenticatedUser } = require("../middleware/auth.cjs");
 
 router.route("/payment/process").post(isAuthenticatedUser, processPayment);
 
 router.route("/stripeapikey").get(isAuthenticatedUser, sendStripeApiKey);
 
-module.exports = router;
+export default router;

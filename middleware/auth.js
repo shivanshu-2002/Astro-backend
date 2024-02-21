@@ -1,9 +1,9 @@
-const ErrorHandler = require("../utils/errorHandler.cjs");
-const catchAsyncErrors = require("./catchAsyncErrors.cjs");
-const jwt = require("jsonwebtoken");
-const User = require("../models/userModel.cjs");
+import ErrorHandler from "../utils/errorHandler.js";
+import catchAsyncErrors from "./catchAsyncErrors.js";
+import jwt from "jsonwebtoken";
+import User from "../models/userModel.js";
 
-exports.isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
+export const isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
   let token;
 
   // Check if the token is present in cookies
@@ -37,7 +37,7 @@ exports.isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
   }
 });
 // To ensure that admin is acessing
-exports.authorizeRoles = (...roles) => {
+export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
     // here we will passing "admin" as the parameter to the function and then in the if condition we are checking req.user.role if it is not equal to admin the we tell them that their role is not authorized to access the specific resource
     if (!roles.includes(req.user.role)) {

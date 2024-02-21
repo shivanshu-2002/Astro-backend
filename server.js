@@ -1,8 +1,7 @@
-const app = require("./app.cjs");
-const env = require("dotenv");
-const connectDatabase = require("./config/database.cjs");
-const cloudinary = require("cloudinary").v2;
-const cors = require("cors");
+import { app } from "./app.js";
+import env from "dotenv";
+import connectDatabase from "./config/database.js";
+import cloudinary from "cloudinary";
 
 // Handling Uncaught Exception (eg: console.log(youtube) )
 process.on("uncaughtException", (err) => {
@@ -14,7 +13,7 @@ process.on("uncaughtException", (err) => {
 // Config
 env.config({ path: "config/config.env" });
 
-cloudinary.config({
+cloudinary.v2.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.API_KEY,
   api_secret: process.env.API_SECRET,

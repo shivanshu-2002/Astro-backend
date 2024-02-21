@@ -1,10 +1,10 @@
-const uriParser = require("../utils/dataUri.cjs");
-const Image = require("../models/imageModel.cjs");
-const ErrorHandler = require("../utils/errorHandler.cjs");
-const catchAsyncErrors = require("../middleware/catchAsyncErrors.cjs");
-const cloudinary = require("cloudinary").v2;
+import { getDataUri } from "../utils/dataUri.js";
+import Image from "../models/imageModel.js";
+import ErrorHandler from "../utils/errorHandler.js";
+import catchAsyncErrors from "../middleware/catchAsyncErrors.js";
+import cloudinary from "cloudinary";
 
-exports.uploadImage = catchAsyncErrors(async (req, res, next) => {
+export const uploadImage = catchAsyncErrors(async (req, res, next) => {
   try {
     const category = req.body.category;
     const file = req.file;
@@ -16,8 +16,8 @@ exports.uploadImage = catchAsyncErrors(async (req, res, next) => {
       );
     }
 
-    const fileUri = uriParser.getDataUri(file);
-    const myCloud = await cloudinary.uploader.upload(fileUri.content);
+    const fileUri = getDataUri(file);
+    const myCloud = await cloudinary.v2.uploader.upload(fileUri.content);
 
     const newImage = await Image.create({
       category: category,
@@ -38,7 +38,7 @@ exports.uploadImage = catchAsyncErrors(async (req, res, next) => {
 });
 
 // Get All Images
-exports.getAllImages = catchAsyncErrors(async (req, res, next) => {
+export const getAllImages = catchAsyncErrors(async (req, res, next) => {
   const images = await Image.find();
 
   // Extract only the image URLs from the images array
@@ -51,7 +51,7 @@ exports.getAllImages = catchAsyncErrors(async (req, res, next) => {
 });
 
 // Get Single Image Details
-exports.getImageDetails = catchAsyncErrors(async (req, res, next) => {
+export const getImageDetails = catchAsyncErrors(async (req, res, next) => {
   const image = await Image.findById(req.params.id);
   if (!image) {
     return next(
@@ -66,7 +66,7 @@ exports.getImageDetails = catchAsyncErrors(async (req, res, next) => {
 });
 
 // Update Image Category
-exports.updateImageCategory = catchAsyncErrors(async (req, res, next) => {
+export const updateImageCategory = catchAsyncErrors(async (req, res, next) => {
   const newCategory = req.body.category;
 
   const image = await Image.findByIdAndUpdate(
@@ -87,7 +87,7 @@ exports.updateImageCategory = catchAsyncErrors(async (req, res, next) => {
 });
 
 // Delete Image
-exports.deleteImage = catchAsyncErrors(async (req, res, next) => {
+export const deleteImage = catchAsyncErrors(async (req, res, next) => {
   const image = await Image.findById(req.params.id);
 
   if (!image) {

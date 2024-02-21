@@ -1,13 +1,12 @@
-const User = require("../models/userModel.cjs");
-const ErrorHandler = require("../utils/errorHandler.cjs");
-const catchAsyncErrors = require("../middleware/catchAsyncErrors.cjs");
-const sendToken = require("../utils/jwtToken.cjs");
-const sendEmail = require("../utils/sendMail.cjs");
-const crypto = require("crypto");
-const cloudinary = require("cloudinary").v2;
-const uriParser = require("../utils/dataUri.cjs");
+import User from "../models/userModel.js";
+import ErrorHandler from "../utils/errorHandler.js";
+import catchAsyncErrors from "../middleware/catchAsyncErrors.js";
+import sendToken from "../utils/jwtToken.js";
+import sendEmail from "../utils/sendMail.js";
+import cloudinary from "cloudinary";
+import { getDataUri } from "../utils/dataUri.js";
 
-exports.registerUser = catchAsyncErrors(async (req, res, next) => {
+export const registerUser = catchAsyncErrors(async (req, res, next) => {
   const {
     name,
     email,
@@ -37,7 +36,7 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
 });
 
 // Login User
-exports.loginUser = catchAsyncErrors(async (req, res, next) => {
+export const loginUser = catchAsyncErrors(async (req, res, next) => {
   const { email, password } = req.body;
 
   // checking if the user has provided both (email and password)
@@ -64,7 +63,7 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
   sendToken(user, 200, res);
 });
 
-exports.logout = catchAsyncErrors(async (req, res, next) => {
+export const logout = catchAsyncErrors(async (req, res, next) => {
   res.cookie("token", null, {
     expires: new Date(Date.now()),
     httpOnly: true,
@@ -75,7 +74,7 @@ exports.logout = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
+export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
     return next(new ErrorHandler("User not found", 404));
@@ -107,7 +106,7 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
+export const resetPassword = catchAsyncErrors(async (req, res, next) => {
   const { otp, password, confirmPassword } = req.body;
 
   const user = await User.findOne({
@@ -133,7 +132,7 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
   sendToken(user, 200, res);
 });
 
-exports.getUserDetails = catchAsyncErrors(async (req, res, next) => {
+export const getUserDetails = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.user.id);
   res.status(200).json({
     success: true,
@@ -141,7 +140,7 @@ exports.getUserDetails = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
+export const updatePassword = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.user.id).select("+password");
 
   const isPasswordMatched = await user.comparePassword(req.body.oldPassword);
@@ -161,7 +160,7 @@ exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
   sendToken(user, 200, res);
 });
 
-exports.updateUserProfile = catchAsyncErrors(async (req, res, next) => {
+export const updateUserProfile = catchAsyncErrors(async (req, res, next) => {
   const newUserData = {
     name: req.body.name,
     email: req.body.email,
@@ -174,8 +173,8 @@ exports.updateUserProfile = catchAsyncErrors(async (req, res, next) => {
 
   // Check if there's an uploaded image
   if (req.file) {
-    const fileUri = uriParser.getDataUri(req.file);
-    const myCloud = await cloudinary.uploader.upload(fileUri.content);
+    const fileUri = getDataUri(req.file);
+    const myCloud = await cloudinary.v2.uploader.upload(fileUri.content);
 
     // Update the user's avatar in the database
     req.user.avatar = {
@@ -197,7 +196,7 @@ exports.updateUserProfile = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-exports.getAllUsers = catchAsyncErrors(async (req, res, next) => {
+export const getAllUsers = catchAsyncErrors(async (req, res, next) => {
   const users = await User.find();
   res.status(200).json({
     success: true,
@@ -205,7 +204,7 @@ exports.getAllUsers = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-exports.getAnyUser = catchAsyncErrors(async (req, res, next) => {
+export const getAnyUser = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.params.id);
   if (!user) {
     return next(
@@ -219,7 +218,7 @@ exports.getAnyUser = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
+export const updateUserRole = catchAsyncErrors(async (req, res, next) => {
   const newUserData = {
     name: req.body.name,
     email: req.body.email,
@@ -239,7 +238,7 @@ exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
+export const deleteUser = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.params.id);
 
   if (!user) {
@@ -257,7 +256,7 @@ exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
 });
 
 // Get top astrologers
-exports.getFeaturedAstrologers = async (req, res, next) => {
+export const getFeaturedAstrologers = async (req, res, next) => {
   try {
     const topAstrologers = await User.find({ role: "astrologer" })
       .sort({ astrologerRating: -1 }) // Sorting by rating in descending order
