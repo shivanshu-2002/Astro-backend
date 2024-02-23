@@ -54,7 +54,22 @@ const userSchema = new mongoose.Schema({
   astrologerExperience: {
     type: Number,
     default: 0,
+  },
+  appointments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Appointment",
+    },
+  ],
+
+  appointmentCompletedCount: {
+    type: Number,
+    default: 0,
     select: false,
+  },
+  isAvailable: {
+    type: Boolean,
+    default: true,
   },
   payments: [
     {

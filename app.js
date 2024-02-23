@@ -23,10 +23,12 @@ import userRoute from "./routes/userRoutes.js";
 import imageRoute from "./routes/imageUploadRoutes.js";
 import errorMiddleware from "./middleware/error.js";
 import payment from "./routes/paymentRoute.js";
+import appointment from "./routes/appointmentRoutes.js";
 
 app.use("/api/v1", userRoute);
 app.use("/api/v1", imageRoute);
 app.use("/api/v1", payment);
+app.use("/api/v1", appointment);
 
 // Middleware for errors
 app.use(errorMiddleware);

@@ -1,22 +1,26 @@
 import express from "express";
 
-import {
-  registerUser,
-  loginUser,
-  forgotPassword,
-  resetPassword,
-  logout,
-  getUserDetails,
-  getAllUsers,
-  getAnyUser,
-  updateUserProfile,
-  updatePassword,
-  getFeaturedAstrologers,
-} from "../controllers/userController.js";
-
 import { postReview, getReviews } from "../controllers/reviewController.js";
 import { isAuthenticatedUser, authorizeRoles } from "../middleware/auth.js";
 import { singleUpload } from "../middleware/multer.js";
+import {
+  forgotPassword,
+  loginUser,
+  logout,
+  registerUser,
+  resetPassword,
+} from "../controllers/authControllers.js";
+import {
+  getAstrologerDetails,
+  getAstrologersList,
+  getFeaturedAstrologers,
+} from "../controllers/astrologerController.js";
+import {
+  getAllUsers,
+  getUserDetails,
+  updatePassword,
+  updateUserProfile,
+} from "../controllers/userController.js";
 const router = express.Router();
 
 router.post("/register", registerUser);
@@ -52,5 +56,13 @@ router.get("/getRatings/:astrologerId", getReviews);
 
 // Post a review for a particular astrologer
 router.post("/postRating/:astrologerId", isAuthenticatedUser, postReview);
+
+router.get("/astrologers", isAuthenticatedUser, getAstrologersList);
+
+router.get(
+  "/astrologers/:astrologerId",
+  isAuthenticatedUser,
+  getAstrologerDetails
+);
 
 export default router;
