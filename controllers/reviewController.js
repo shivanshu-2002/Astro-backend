@@ -48,3 +48,20 @@ export const getReviews = catchAsyncErrors(async (req, res, next) => {
     reviews,
   });
 });
+
+export const getTopReviews = catchAsyncErrors(async (req, res, next) => {
+  try {
+    // Get the top 10 reviews with the highest ratings
+    const topReviews = await Review.find({})
+      .sort({ ratings: -1 }) // Sorting by ratings in descending order
+      .limit(10); // Limiting to the top 10 reviews
+
+    res.status(200).json({
+      success: true,
+      count: topReviews.length,
+      topReviews,
+    });
+  } catch (error) {
+    next(error);
+  }
+});

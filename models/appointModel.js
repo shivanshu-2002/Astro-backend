@@ -11,6 +11,15 @@ const appointmentSchema = new mongoose.Schema({
     enum: ["pending", "completed", "cancelled"],
     default: "pending",
   },
+  type: {
+    type: String,
+    enum: ["chat", "videoCall", "live"],
+    default: "chat",
+  },
+  appointmentCost: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const Appointment = mongoose.model("Appointment", appointmentSchema);

@@ -24,11 +24,11 @@ const userSchema = new mongoose.Schema({
   avatar: {
     public_id: {
       type: String,
-      required: true,
+      required: false,
     },
     url: {
       type: String,
-      required: true,
+      required: false,
     },
   },
   role: {
@@ -55,6 +55,16 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  astrologerPrice: {
+    chatFees: {
+      type: Number,
+      default: 0,
+    },
+    videoCallFees: {
+      type: Number,
+      default: 0,
+    },
+  },
   appointments: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -67,9 +77,10 @@ const userSchema = new mongoose.Schema({
     default: 0,
     select: false,
   },
-  isAvailable: {
-    type: Boolean,
-    default: true,
+  astrologerStatus: {
+    type: String,
+    enum: ["available", "unavailable", "busy"],
+    default: "unavailable",
   },
   payments: [
     {

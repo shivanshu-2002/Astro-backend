@@ -4,34 +4,119 @@ import ErrorHandler from "../utils/errorHandler.js";
 import catchAsyncErrors from "../middleware/catchAsyncErrors.js";
 import sendToken from "../utils/jwtToken.js";
 import sendEmail from "../utils/sendMail.js";
+import { generateOTP } from "../models/otpModel.js";
+import OTPModel from "../models/otpModel.js";
+
+export const sendOTP = catchAsyncErrors(async (req, res, next) => {
+  const { email } = req.body;
+
+  const otpValue = generateOTP();
+
+  try {
+    // Create an OTP document
+    const otpDocument = await OTPModel.create({
+      email,
+      otp: otpValue,
+    });
+
+    const message = `Your OTP for account verification is: ${otpValue}. This OTP will expire within 5 minutes. Use it to verify your email address.`;
+
+    try {
+      await sendEmail({
+        email,
+        subject: `Account Verification`,
+        message,
+      });
+
+      // Note: You should use the 'res' object passed as an argument, not 'res' from the outer scope
+      res.status(201).json({
+        success: true,
+        message: `OTP sent to ${email} for verification. Please enter the OTP to proceed.`,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+
+    return otpDocument;
+  } catch (error) {
+    return next(new ErrorHandler(`Error creating OTP: ${error.message}`, 500));
+  }
+});
 
 export const registerUser = catchAsyncErrors(async (req, res, next) => {
-  const {
-    name,
-    email,
-    password,
-    zodiacSign,
-    birthDate,
-    birthTime,
-    birthPlace,
-    gender,
-  } = req.body;
-  const user = await User.create({
-    name,
-    email,
-    password,
-    avatar: {
-      public_id: "this is a sample id",
-      url: "profilePictureUrl",
-    },
-    zodiacSign,
-    birthDate,
-    birthTime,
-    birthPlace,
-    gender,
-  });
+  const { name, email, password, otp } = req.body;
+  console.log(otp);
 
-  sendToken(user, 201, res);
+  try {
+    // Find the OTP document by email
+    const otpDocument = await OTPModel.findOne({ email });
+    console.log(otpDocument);
+
+    // Check if the OTP document is available
+    if (!otpDocument || otpDocument.otp !== otp) {
+      return next(new ErrorHandler("Invalid OTP or OTP expired", 400));
+    }
+
+    // Create a new user with the provided details
+    const user = await User.create({
+      name,
+      email,
+      password,
+    });
+
+    user.save();
+
+    // Send a response to the client indicating successful registration
+    res.status(201).json({
+      success: true,
+      message: `User registered successfully.`,
+    });
+  } catch (error) {
+    return next(
+      new ErrorHandler(`Error during registration: ${error.message}`, 500)
+    );
+  }
+});
+
+export const verifyOTP = catchAsyncErrors(async (req, res, next) => {
+  const { email, otp } = req.body;
+
+  try {
+    const user = await User.findOne({ email }).select("+otp");
+
+    console.log(user);
+    // Make sure the user and user.otp are available
+    if (!user || !user.otp) {
+      console.log("User or OTP not found");
+      return next(new ErrorHandler("Invalid OTP or OTP expired", 400));
+    }
+
+    // Log the user.otp to check the ObjectId
+    console.log("User OTP:", user.otp);
+
+    // Check if the user's OTP matches the entered OTP
+    if (user.otp !== otp) {
+      console.log("Invalid OTP");
+      // If OTP is incorrect, you can choose to delete the user
+      await User.findOneAndDelete({ email });
+      return next(
+        new ErrorHandler("Invalid OTP. Return to the registration page", 400)
+      );
+    }
+
+    // Mark the OTP as expired in the User model
+    user.otp = undefined;
+    await user.save();
+
+    // Send a response to the client indicating that OTP has been verified
+    res.status(200).json({
+      success: true,
+      message: "OTP verified successfully.",
+    });
+  } catch (error) {
+    console.error("Error in verifyOTP:", error);
+    return next(new ErrorHandler("Internal Server Error", 500));
+  }
 });
 
 // Login User

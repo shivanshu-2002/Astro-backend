@@ -1,3 +1,4 @@
+// controllers/appointmentController.js
 import User from "../models/userModel.js";
 import Appointment from "../models/appointModel.js";
 import catchAsyncErrors from "../middleware/catchAsyncErrors.js";
@@ -7,19 +8,45 @@ export const makeAppointment = catchAsyncErrors(async (req, res, next) => {
   const astrologerId = req.params.astrologerId;
   const userId = req.user.id;
 
-  // Perform necessary validations and create the appointment
+  // Extract appointmentType from the request body or query parameters
+  const { appointmentType } = req.body; // Change this based on your request structure
+
+  // Validate appointmentType (you can add more validations as needed)
+  if (!appointmentType || !["chat", "video"].includes(appointmentType)) {
+    return next(
+      new ErrorHandler(
+        "Invalid appointment type. Must be 'chat' or 'video'",
+        400
+      )
+    );
+  }
+
   try {
+    // Retrieve astrologer details including chatFees and videoCallFees
+    const astrologer = await User.findById(astrologerId).select(
+      "astrologerPrice"
+    );
+
+    // Set appointment cost based on the type
+    const appointmentCost =
+      appointmentType === "chat"
+        ? astrologer.astrologerPrice.chatFees
+        : astrologer.astrologerPrice.videoCallFees;
+
     const newAppointment = await Appointment.create({
       astrologer: astrologerId,
       user: userId,
+      type: appointmentType,
+      appointmentCost,
       // Add other appointment details like startTime, endTime, etc.
     });
 
-    // Update the astrologer's upcoming appointments
+    // Update the astrologer's upcoming appointments and earnings
     await User.findByIdAndUpdate(
       astrologerId,
       {
         $push: { upcomingAppointments: newAppointment._id },
+        $inc: { earnings: appointmentCost },
       },
       { new: true }
     );
@@ -44,6 +71,8 @@ export const makeAppointment = catchAsyncErrors(async (req, res, next) => {
     }
   }
 });
+
+// Rest of the code remains unchanged
 
 export const completeAppointment = catchAsyncErrors(async (req, res, next) => {
   const appointmentId = req.params.appointmentId;
